@@ -14,7 +14,7 @@ class TestDataLoader(unittest.TestCase):
     def test_clean_data(self):
         df_clean = self.loader.clean_data()
         self.assertGreater(df_clean['GHI'].mean(), 0)
-        self.assertGreater(df_clean['GHI'].min(), -1)  # No negatives
+        self.assertGreater(df_clean['GHI'].min(), -1)
 
 if __name__ == '__main__':
     unittest.main()
