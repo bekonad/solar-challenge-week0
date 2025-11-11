@@ -36,7 +36,7 @@ class SolarDataLoader:
         return self.df
 
 if __name__ == "__main__":
-    loader = SolarDataLoader('data/benin.csv')  # Fixed path
+    loader = SolarDataLoader('data/benin.csv')
     df = loader.load_data()
     df_clean = loader.clean_data()
     print("Clean shape:", df_clean.shape)
