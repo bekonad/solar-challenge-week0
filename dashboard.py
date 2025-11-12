@@ -14,24 +14,54 @@ st.markdown("Interactive dashboard for GHI analysis from Benin, Sierra Leone, an
 
 # Load data (adjust paths as needed)
 @st.cache_data
-def load_data():
-    benin = pd.read_csv('data/benin_clean.csv', parse_dates=['Timestamp'], index_col='Timestamp')
-    sierra_leone = pd.read_csv('data/sierra_leone_clean.csv', parse_dates=['Timestamp'], index_col='Timestamp')
-    togo = pd.read_csv('data/togo_clean.csv', parse_dates=['Timestamp'], index_col='Timestamp')
-    # Add country column
-    benin['Country'] = 'Benin'
-    sierra_leone['Country'] = 'Sierra Leone'
-    togo['Country'] = 'Togo'
-    df = pd.concat([benin, sierra_leone, togo])
-    # Derive season (simplified: Dry Dec-Feb, Wet else)
-    df['Month'] = df.index.month
-    df['Season'] = df['Month'].apply(lambda m: 'Dry' if m in [12,1,2] else 'Wet')
+def load_data(uploaded_files=None):
+    import os
+    
+    # Try repo path first
+    csv_files = {
+        'Benin': 'data/benin_clean.csv',
+        'Sierra Leone': 'data/sierra_leone_clean.csv',
+        'Togo': 'data/togo_clean.csv'
+    }
+    df_list = []
+    
+    for country, path in csv_files.items():
+        if os.path.exists(path):
+            df_country = pd.read_csv(path, parse_dates=['Timestamp'], index_col='Timestamp')
+            df_country['Country'] = country
+            df_list.append(df_country)
+            st.info(f"Loaded {country} from repo ({len(df_country)} rows).")
+        else:
+            st.warning(f"{country} CSV not found in repo. Use uploader below.")
+            df_list.append(pd.DataFrame())  # Empty fallback
+    
+    if df_list and all(not df.empty for df in df_list):
+        df = pd.concat(df_list)
+    else:
+        df = pd.DataFrame()  # Empty if all fail
+        st.error("No data loaded. Upload CSVs via sidebar.")
+    
+    # Derive season (if data exists)
+    if not df.empty:
+        df['Month'] = df.index.month
+        df['Season'] = df['Month'].apply(lambda m: 'Dry' if m in [12,1,2] else 'Wet')
+    
     return df
+    df = pd.concat([benin, sierra_leone, togo])
 
 df = load_data()
+if df.empty:
+    st.stop()  # Halt if no data
 
 # Sidebar filters
 st.sidebar.header("Filters")
+# Fallback uploader if repo data missing
+uploaded_files = st.sidebar.file_uploader("Upload CSVs (if repo fails)", accept_multiple_files=True, type='csv', help="Upload benin_clean.csv, sierra_leone_clean.csv, togo_clean.csv")
+if uploaded_files:
+    # Simple parse (map by filename; enhance as needed)
+    df = load_data(uploaded_files=uploaded_files)  # Pass for custom load if needed
+else:
+    df = load_data()
 selected_countries = st.sidebar.multiselect("Select Countries", options=df['Country'].unique(), default=df['Country'].unique())
 selected_seasons = st.sidebar.multiselect("Select Seasons", options=df['Season'].unique(), default=df['Season'].unique())
 filtered_df = df[(df['Country'].isin(selected_countries)) & (df['Season'].isin(selected_seasons))]
