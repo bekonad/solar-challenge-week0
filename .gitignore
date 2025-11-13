@@ -10,3 +10,4 @@ data/raw/  # Ignore raw CSVs (large, local)
 !data/processed/*_clean.csv
 !data/processed/merged_summary.csv
 !notebooks/*.png
+!notebooks/*.ipynb).
