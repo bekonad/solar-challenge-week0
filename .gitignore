@@ -1,0 +1,13 @@
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.vscode/
+data/raw/  # Ignore raw CSVs (large, local)
+*.ipynb_checkpoints/
+# Allow cleaned exports and viz
+!data/processed/*_clean.csv
+!data/processed/merged_summary.csv
+!notebooks/*.png
+!notebooks/*.ipynb).
